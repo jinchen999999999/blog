@@ -2,7 +2,7 @@
  * [site is global object]
  */
 var site = {};
-site.api_base  = '../';// ajax's api base url
+site.api_base  = 'http://jinchen999999999-202483.apne1.nitrousbox.com/';// ajax's api base url
 site.html_base = './';
 
 /**
