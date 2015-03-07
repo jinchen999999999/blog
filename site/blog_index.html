@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+		table, th, td {
+	    border: 1px solid black;
+	    width: 100%;
+		}
+		</style>
+	</head>
+
+	<body>
+		<div class="panel-group" id="list" role="tablist" aria-multiselectable="true">
+  		
+  	</div>
+		
+		<!-- <div id="overview">
+			<table id="list">
+				<tr>
+					<th>title</th>
+					<th>datetime</th>
+				</tr>
+				<tr>
+	        <td>
+	          <div>content</div>
+	        </td>
+	      </tr>
+			</table>
+		</div> -->
+	
+
+		<script type="text/javascript">
+		$(function(){
+			
+			site.get_api_result( {
+				debug: false,
+				route: 'blog',
+				method: 'GET'
+			}, 
+				function(result){
+					var deferred;// for sync
+
+					for(var i=0, c=result.length; i<c; i++){
+						var row = result[i];
+
+						var html = ''.concat(
+							'<div class="panel panel-default"> \
+						    <div class="panel-heading" role="tab" id="heading', result[i].id,'"> \
+						      <h4 class="panel-title"> \
+						        <a data-toggle="collapse" data-parent="#list" href="#collapse', result[i].id,'" aria-expanded="true" aria-controls="collapse', result[i].id,'"> \
+						          ', result[i].title, result[i].created_at,
+					          '</a> \
+						      </h4> \
+						    </div> \
+						    <div id="collapse', result[i].id,'" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading', result[i].id,'"> \
+						      <div class="panel-body" > \
+						      	aaaaaaaaaaaaadfvd\
+						      	aaaaaaaaaaaaadfvd\
+						      	aaaaaaaaaaaaadfvd\
+						      	aaaaaaaaaaaaadfvd\
+						      </div> \
+						    </div> \
+						  </div>'
+						);
+
+
+						// var html = ''.concat('<tr data-id="', result[i].id,'">');
+						
+						// html = html.concat('<td>', '<a herf="#">', result[i].title, '</a>','</td>');
+						// html = html.concat('<td>', result[i].created_at, '</td>');
+						// html += '</tr>';
+
+						$("#list").append(html);
+						
+						deferred =
+							$.Deferred(function(){	
+								// 點擊panel(為了讓他縮起來)
+								$('#heading' + result[i].id + ' a').trigger('click');
+							});
+					
+					}
+					// 確認點擊過所有panel的flag
+					deferred.resolve();
+					
+					// 點擊過所有panel後 才為panel定義點擊事件
+					deferred.done(function(){
+						$("body").on('click', '.panel a' , function(e) {
+							alert($(this).data('id'));
+						});
+					});
+				}
+						
+			);	
+			
+ 
+			site.trigger_acts();
+			
+			// target a dynamically added element
+			$("body").on('click', 'tr a' , function() {
+				alert("aa");
+			});
+
+			site.click_hash("#btn", function(){
+				alert("aaa");
+			});
+
+			site.click_hash("#btn2", function(){
+				alert("bbb");
+			});
+		});
+		</script>
+	</body>
+
+</html>
