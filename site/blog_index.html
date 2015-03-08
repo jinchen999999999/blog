@@ -8,6 +8,17 @@
 	    border: 1px solid black;
 	    width: 100%;
 		}
+		.panel-body {
+			word-break: break-all;
+
+			// Non standard for webkit
+			word-break: break-word;
+
+			-webkit-hyphens: auto;
+			   -moz-hyphens: auto;
+			        hyphens: auto;
+		}
+
 		</style>
 	</head>
 
@@ -29,55 +40,90 @@
 	      </tr>
 			</table>
 		</div> -->
-	
+<nav>
+  <ul class="pager">
+    <li><a id="back_pg">Previous</a></li>
+    <li><a id="next_pg">Next</a></li>
+  </ul>
+</nav>	
 
 		<script type="text/javascript">
+
+
+
 		$(function(){
-			
+
+			// 換頁
+			$("#back_pg, #next_pg").click(function(){
+				var pg_action = this.id;
+				var limit     = parseInt( site.get('limit'), 10);
+				var offset    = parseInt( site.get('offset'), 10);
+
+				if(pg_action == 'next_pg'){
+					offset += limit;
+				}else if( (offset - limit) >= 0 ){
+					offset -= limit;
+				}else{
+					alert("the end");
+					return false;
+				}
+
+				site.redirect(
+					"index.html" 
+					+ "#L_main=blog_index&L_left_side=blog_index_leftside"
+					+ "&offset=" + offset
+					+ "&limit=" + limit
+				);
+				//alert(JSON.stringify(sHash._layouts));
+			});
+
+			// panel列表
 			site.get_api_result( {
-				debug: false,
-				route: 'blog',
-				method: 'GET'
+				autoGets: true,
+				debug   : false,
+				route   : 'blog',
+				method  : 'GET'
 			}, 
 				function(result){
+					if(result.length <= 0 ){
+						alert("the end");
+						return false;
+					}
+
+
 					var deferred;// for sync
 
 					for(var i=0, c=result.length; i<c; i++){
 						var row = result[i];
 
 						var html = ''.concat(
-							'<div class="panel panel-default"> \
-						    <div class="panel-heading" role="tab" id="heading', result[i].id,'"> \
+							'<div class="panel panel-success"> \
+						    <div class="panel-heading" role="tab" id="heading', row.id,'"> \
 						      <h4 class="panel-title"> \
-						        <a data-toggle="collapse" data-parent="#list" href="#collapse', result[i].id,'" aria-expanded="true" aria-controls="collapse', result[i].id,'"> \
-						          ', result[i].title, result[i].created_at,
+						        <a data-blog_id="', row.id,'" data-toggle="collapse" data-parent="#list" href="#collapse', row.id,'" aria-expanded="true" aria-controls="collapse', row.id,'"> \
+						          ', row.title, row.created_at,
 					          '</a> \
 						      </h4> \
 						    </div> \
-						    <div id="collapse', result[i].id,'" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading', result[i].id,'"> \
-						      <div class="panel-body" > \
-						      	aaaaaaaaaaaaadfvd\
-						      	aaaaaaaaaaaaadfvd\
-						      	aaaaaaaaaaaaadfvd\
-						      	aaaaaaaaaaaaadfvd\
-						      </div> \
+						    <div id="collapse', row.id,'" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading', row.id,'"> \
+						      <div id="blog_content', row.id,'" class="panel-body" ></div> \
 						    </div> \
 						  </div>'
 						);
 
 
-						// var html = ''.concat('<tr data-id="', result[i].id,'">');
+						// var html = ''.concat('<tr data-id="', row.id,'">');
 						
-						// html = html.concat('<td>', '<a herf="#">', result[i].title, '</a>','</td>');
-						// html = html.concat('<td>', result[i].created_at, '</td>');
+						// html = html.concat('<td>', '<a herf="#">', row.title, '</a>','</td>');
+						// html = html.concat('<td>', row.created_at, '</td>');
 						// html += '</tr>';
 
 						$("#list").append(html);
 						
 						deferred =
 							$.Deferred(function(){	
-								// 點擊panel(為了讓他縮起來)
-								$('#heading' + result[i].id + ' a').trigger('click');
+								// 點擊panel(為了讓他全部縮起來)
+								$('#heading' + row.id + ' a').trigger('click');
 							});
 					
 					}
@@ -87,7 +133,20 @@
 					// 點擊過所有panel後 才為panel定義點擊事件
 					deferred.done(function(){
 						$("body").on('click', '.panel a' , function(e) {
-							alert($(this).data('id'));
+							//alert($(this).data('blog_id'));
+							
+							// 生出內文
+							var blog_id = $(this).data('blog_id');
+							site.get_api_result( {
+								debug: false,
+								route: 'blog/'+ blog_id,
+								method: 'GET'
+							}, 
+								function(result){
+									$("div#blog_content"+ blog_id).html(result.content);
+							});
+
+
 						});
 					});
 				}

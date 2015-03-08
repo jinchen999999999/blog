@@ -64,7 +64,7 @@ sHash._get     = {};
  * [hash debug]
  * param type 的hash 屬於物件格式
  */
-alert(JSON.stringify(sHash));
+//alert(JSON.stringify(sHash));
 
 /**
  * [layout main page]
@@ -112,17 +112,34 @@ site.trigger_acts = function(second){
 		}, sec);
 };
 
+
+/**
+ * [依輸入的key 取得hash內的單一值get值 ]
+ * 若無存在於get內 可回傳預設值
+ * 若無存在於get內 也無預設值 則回傳false
+ */
+site.get = function(param, default_val){
+	for(var key in sHash._get){
+
+		if(param === key){
+			return sHash._get[key];
+		}
+	}
+
+	return (typeof default_val !== 'undefined') ? default_val : false;
+	
+};
+
 /**
  * [取得以Hash內容轉成的擬GET字串]
  * 用來呼叫Ajax api
  */
-site.get = sHash._get;
 site.get_params_url = function(){
 
 	var str   = '';
 	var count = 0;
 
-	for(var key in site.get){
+	for(var key in sHash._get){
 
 		if(count === 0){
 			str += '?';
@@ -130,7 +147,7 @@ site.get_params_url = function(){
 			str += '&';
 		}
 
-		str = str.concat(key, "=", site.get[key]);
+		str = str.concat(key, "=", sHash._get[key]);
 		count++;
 	}
 
@@ -142,25 +159,39 @@ site.get_params_url = function(){
  */
 site.get_api_result = function(conf_obj ,callback){
 	
-		var is_debug = (conf_obj.hasOwnProperty('debug') && conf_obj.debug == true) ? true : false;	
-
 		var route = site.api_base + conf_obj.route;
-		conf_obj.url = route + site.get_params_url();
+		var is_debug = false;
 
+		// 預設回傳json格式
 		conf_obj.dataType = (typeof conf_obj.dataType !== 'undefined') ? conf_obj.dataType : 'json';
 
-		if(is_debug){
+		// 是否自動在api後面帶上get參數
+		if(conf_obj.hasOwnProperty('autoGets') && conf_obj.autoGets == true){
+			conf_obj.url = route + site.get_params_url();
+		}else{
+			conf_obj.url = route;
+		}
+
+		// 是否開啟debug模式
+		if(conf_obj.hasOwnProperty('debug') && conf_obj.debug == true){
+			is_debug = true;
 			alert('ajax setup:' + JSON.stringify(conf_obj));
 		}
 
 		$.ajax(conf_obj)
 		.done(function( result ) {
-	  	(callback && typeof(callback) === "function") && callback(result);
 
-	  	if(is_debug){
+			if(is_debug){
 	  		alert('result:' + JSON.stringify(result));
 	  	}
-	  	
+
+			// ajax結果為空 則停止往下做
+			// if( $.isEmptyObject(result) ){
+			// 	return false;
+			// } 
+
+	  	(callback && typeof(callback) === "function") && callback(result);
+
 	  });
 
 };
@@ -187,4 +218,14 @@ site.click_hash = function(id, callback){
 		(callback && typeof(callback) === "function") && callback(event);
 			
 	});
+};
+
+/**
+ * [redirect description]
+ * @param  {[type]} url [description]
+ * @return {[type]}     [description]
+ */
+site.redirect = function(url){
+	location.href = site.html_base + url;
+	location.reload();// set true force it to reload the page from the server
 };
